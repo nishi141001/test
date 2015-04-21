@@ -1,0 +1,2 @@
+print "test"
+puts "test"
