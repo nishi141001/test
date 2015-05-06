@@ -6,8 +6,12 @@
 Sub main()
 Dim i As Integer
 i = 2
-While (Worksheets("ボタン作成用").Cells(i, 2) <> "")
-    Select Case Worksheets("ボタン作成用").Cells(i, 2)
+
+'worksheetオブジェクトも変数に保存できる
+set menu = Worksheets("ボタン作成用")
+
+While (menu.Cells(i, 2) <> "")
+    Select Case menu.Cells(i, 2)
         '各カラムに応じて呼び出す関数を変える
         Case "カラムA"
             Call func_a(i)
