@@ -1,0 +1,74 @@
+'Test用
+'コード値変換やNULL値変換用の練習
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'memo 開発タブの挿入からボタン作成
+
+Sub main()
+Dim i As Integer
+i = 2
+While (Worksheets("ボタン作成用").Cells(i, 2) <> "")
+    Select Case Worksheets("ボタン作成用").Cells(i, 2)
+        '各カラムに応じて呼び出す関数を変える
+        Case "カラムA"
+            Call func_a(i)
+        Case "カラムB"
+            Call func_b(i)
+        Case "カラムC"
+            Call func_a(i)
+        End Select
+        i = i + 1
+Wend
+End Sub
+
+Sub func_a(i As Integer)
+    'コード変換のいらない列かつブランクにはNULLを入れる列の処理
+    sheetname = Worksheets("ボタン作成用").Cells(i, 1)
+    start_record = Worksheets("ボタン作成用").Cells(i, 3)
+    end_record = Worksheets("ボタン作成用").Cells(i, 4)
+    retu = Worksheets("ボタン作成用").Cells(i, 5)
+    'あらかじめ手でexcelに入力した列のアルファベットを、列番号に変換
+    retu_num = Range(retu & "1").Column
+    
+    k = start_record
+    
+    '対象のデータに応じてここで列や文字内容の制約チェックもできれば行いたい
+    '例えば文字数チェックとか
+    
+    'レコードの最初から最後まで
+    While (k < end_record + 1)
+        col_val = Worksheets(sheetname).Cells(k, retu_num)
+        If col_val = vbNullString Then  'フィールドがブランクの時NULLを入力
+            Worksheets(sheetname).Cells(k, retu_num).Value = "NULL"
+        End If
+        k = k + 1
+    Wend
+End Sub
+
+Sub func_b(i As Integer)
+    'コード変換が必要な列の処理
+    sheetname = Worksheets("ボタン作成用").Cells(i, 1)
+    start_record = Worksheets("ボタン作成用").Cells(i, 3)
+    end_record = Worksheets("ボタン作成用").Cells(i, 4)
+    retu = Worksheets("ボタン作成用").Cells(i, 5)
+    'あらかじめ手でexcelに入力した列のアルファベットを、列番号に変換
+    retu_num = Range(retu & "1").Column
+    
+    k = start_record
+    
+    '対象のデータに応じてここで列や文字内容の制約チェックもできれば行いたい
+    'こっちはコード変換できる内容かどうかのチェックが欲しい
+    
+    'レコードの最初から最後まで
+    '呼び出すときの変換したいコード値に応じてコード変換
+    While (k < end_record + 1)
+        col_val = Worksheets(sheetname).Cells(k, retu_num)
+        If col_val = "郵送" Then
+            Worksheets(sheetname).Cells(k, retu_num).Value = "1"
+        ElseIf col_val = "fax" Then
+            Worksheets(sheetname).Cells(k, retu_num).Value = "2"
+        Else
+            Worksheets(sheetname).Cells(k, retu_num).Value = "not defined"
+        End If
+        k = k + 1
+    Wend
+End Sub
