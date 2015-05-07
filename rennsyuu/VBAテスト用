@@ -5,15 +5,26 @@
 
 Sub main()
 Dim i As Integer
+Dim Menu As Worksheet
 i = 2
-While (Worksheets("ボタン作成用").Cells(i, 2) <> "")
-    Select Case Worksheets("ボタン作成用").Cells(i, 2)
+    
+'-While (Worksheets("ボタン作成用").Cells(i, 2) <> "")
+'-    Select Case Worksheets("ボタン作成用").Cells(i, 2)
+'+
+'worksheetオブジェクトも変数に保存できる
+Set Menu = Worksheets("ボタン作成用")
+
+While (Menu.Cells(i, 2) <> "")
+    Select Case Menu.Cells(i, 2)
         '各カラムに応じて呼び出す関数を変える
         Case "カラムA"
+            Call func_c(i)
             Call func_a(i)
         Case "カラムB"
+            Call func_c(i)
             Call func_b(i)
         Case "カラムC"
+            Call func_c(i)
             Call func_a(i)
         End Select
         i = i + 1
@@ -34,14 +45,15 @@ Sub func_a(i As Integer)
     '対象のデータに応じてここで列や文字内容の制約チェックもできれば行いたい
     '例えば文字数チェックとか
     
-    'レコードの最初から最後まで
+    
     While (k < end_record + 1)
         col_val = Worksheets(sheetname).Cells(k, retu_num)
-        If col_val = vbNullString Then  'フィールドがブランクの時NULLを入力
+        If col_val = vbNullString Then
             Worksheets(sheetname).Cells(k, retu_num).Value = "NULL"
         End If
         k = k + 1
     Wend
+ 
 End Sub
 
 Sub func_b(i As Integer)
@@ -58,8 +70,7 @@ Sub func_b(i As Integer)
     '対象のデータに応じてここで列や文字内容の制約チェックもできれば行いたい
     'こっちはコード変換できる内容かどうかのチェックが欲しい
     
-    'レコードの最初から最後まで
-    '呼び出すときの変換したいコード値に応じてコード変換
+    
     While (k < end_record + 1)
         col_val = Worksheets(sheetname).Cells(k, retu_num)
         If col_val = "郵送" Then
@@ -72,3 +83,42 @@ Sub func_b(i As Integer)
         k = k + 1
     Wend
 End Sub
+
+Sub func_c(i As Integer)
+    '特定の文字数及び、外字(また今度)をチェックする処理
+    Set Menu = Worksheets("ボタン作成用")
+    sheetname = Menu.Cells(i, 1)
+    start_record = Menu.Cells(i, 3)
+    end_record = Menu.Cells(i, 4)
+    retu = Menu.Cells(i, 5)
+    retu_num = Range(retu & "1").Column
+    '任意の指定文字数かチェック
+    limit_len = Menu.Cells(i, 6)
+    
+    k = start_record
+    '対象の件数も同時にチェックする
+    Dim l As Integer
+    l = 0
+    '文字数チェック
+    While (k < end_record + 1)
+        col_val = Worksheets(sheetname).Cells(k, retu_num)
+        If LenB(col_val) > limit_len Then
+            Worksheets(sheetname).Cells(k, retu_num).Font.ColorIndex = 5
+            l = l + 1
+        End If
+        '↓これ忘れると延々と処理終わらない
+        k = k + 1
+        
+    Wend
+    Menu.Cells(i, 7) = l & "件"
+End Sub
+
+
+
+
+
+
+
+
+
+
