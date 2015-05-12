@@ -6,14 +6,21 @@
 Sub main()
 Dim i As Integer
 Dim Menu As Worksheet
+Dim nsheet As String
 i = 2
     
 '-While (Worksheets("ボタン作成用").Cells(i, 2) <> "")
 '-    Select Case Worksheets("ボタン作成用").Cells(i, 2)
 '+
 'worksheetオブジェクトも変数に保存できる
+
+
 Set Menu = Worksheets("ボタン作成用")
 
+'20155012 作成シート名を、ボタン作成用シートのI2セルに入力した任意のシート名にする
+'I2セルの作成シート名とこれから編集するシート名を一致させる必要あり
+nsheet = Menu.Cells(2, 9)
+Call createsheet(nsheet)
 While (Menu.Cells(i, 2) <> "")
     Select Case Menu.Cells(i, 2)
         '各カラムに応じて呼び出す関数を変える
@@ -113,12 +120,21 @@ Sub func_c(i As Integer)
     Menu.Cells(i, 7) = l & "件"
 End Sub
 
+Sub createsheet(nsheet As String)
+'20150510　原本は触りたくないため、ボタン押下してシートを追加⇒追加先にコピー⇒コピー先を編集
+'20150512　コピー先を編集はよくわからないため、コピー先を原本として、コピー元を編集
+    Dim tmpname As String
+    Dim dummysheet As Worksheet
+    tmpname = " (2)"
+    Set dummysheet = Worksheets.Add() '①
+    Worksheets(nsheet).Copy After:=dummysheet '②
+    'なぜか①がないと②でエラーに⇒余分なシートが追加されてしまう
+    '同名シートをコピーすると、エラーメッセージが出て、シーケンス番号付与「sheet(2)とか」される
+    On Error Resume Next
+    tmp = nsheet & tmpname
+    Worksheets(tmp).Name = "原本"
 
 
-
-
-
-
-
+End Sub
 
 
