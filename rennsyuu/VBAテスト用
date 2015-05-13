@@ -28,10 +28,10 @@ While (Menu.Cells(i, 2) <> "")
             Call func_c(i)
             Call func_a(i)
         Case "カラムB"
-            Call func_c(i)
+            'Call func_c(i)
             Call func_b(i)
         Case "カラムC"
-            Call func_c(i)
+            'Call func_c(i)
             Call func_a(i)
         End Select
         i = i + 1
@@ -60,8 +60,7 @@ Sub func_a(i As Integer)
         End If
         k = k + 1
     Wend
- 
-End Sub
+   End Sub
 
 Sub func_b(i As Integer)
     'コード変換が必要な列の処理
@@ -106,6 +105,7 @@ Sub func_c(i As Integer)
     '対象の件数も同時にチェックする
     Dim l As Integer
     l = 0
+    count_not_zenkaku = 0
     '文字数チェック
     While (k < end_record + 1)
         col_val = Worksheets(sheetname).Cells(k, retu_num)
@@ -113,11 +113,34 @@ Sub func_c(i As Integer)
             Worksheets(sheetname).Cells(k, retu_num).Font.ColorIndex = 5
             l = l + 1
         End If
-        '↓これ忘れると延々と処理終わらない
-        k = k + 1
         
+    '20150513 全角のみの制約列で、全角以外が存在する場合、該当文字のみ色付け
+        Dim tmpmozi As String
+    'セル内の文字数を数えて文字数分だけループ処理
+        Dim count As Integer
+         count = Len(col_val)
+         m = 1
+    'セル内の文字一つずつチェック
+        While (m < count + 1)
+            tmpmozi = Mid(col_val, m, 1)
+            len_mozi = Len(tmpmozi)
+            lenb_mozi = LenB(StrConv(tmpmozi, vbFromUnicode))
+            If len_mozi = lenb_mozi Then
+            'tmpnum = InStr(1, col_val, tmpmozi, vbTextCompare)
+            'If tmpnum = 0 Or tmpmozi = "" Or tmpmozi = Null Then
+            '半角
+                Worksheets(sheetname).Cells(k, retu_num).Characters(m, 1).Font.ColorIndex = 3
+                count_not_zenkaku = count_not_zenkaku + 1
+            End If
+    'Debug.Print (tmpmozi)
+    'MsgBox (tmpmozi)
+        m = m + 1
+        Wend
+    '↓これ忘れると延々と処理終わらない、while書いたら忘れないよう最初に書く
+        k = k + 1
     Wend
     Menu.Cells(i, 7) = l & "件"
+    Menu.Cells(i, 8) = count_not_zenkaku & "個"
 End Sub
 
 Sub createsheet(nsheet As String)
@@ -129,7 +152,7 @@ Sub createsheet(nsheet As String)
     Set dummysheet = Worksheets.Add() '①
     Worksheets(nsheet).Copy After:=dummysheet '②
     'なぜか①がないと②でエラーに⇒余分なシートが追加されてしまう
-    '同名シートをコピーすると、エラーメッセージが出て、シーケンス番号付与「sheet(2)とか」される
+    '同名シートをコピーすると、エラーメッセージが出て、シーケンス番号付与「sheet(2)とか」されてスキップ
     On Error Resume Next
     tmp = nsheet & tmpname
     Worksheets(tmp).Name = "原本"
@@ -138,3 +161,16 @@ Sub createsheet(nsheet As String)
 End Sub
 
 
+
+Sub hankakucheck()
+'半角のみの制約列で、半角以外が存在する場合、該当文字のみ色付け
+End Sub
+
+Sub hankakukana()
+'半角カナのみの制約列で、半角カナ以外が存在する場合、該当文字のみ色付け
+End Sub
+
+Sub gaizicheck()
+'外字を16進数に変換して、セルとセル内の該当文字のみ色付け
+
+End Sub
