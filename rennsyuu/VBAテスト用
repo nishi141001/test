@@ -19,7 +19,7 @@ Set Menu = Worksheets("ボタン作成用")
 
 '20155012 作成シート名を、ボタン作成用シートのI2セルに入力した任意のシート名にする
 'I2セルの作成シート名とこれから編集するシート名を一致させる必要あり
-nsheet = Menu.Cells(2, 9)
+nsheet = Menu.Cells(10, 6)
 Call createsheet(nsheet)
 While (Menu.Cells(i, 2) <> "")
     Select Case Menu.Cells(i, 2)
@@ -28,14 +28,15 @@ While (Menu.Cells(i, 2) <> "")
             Call func_c(i)
             Call func_a(i)
         Case "カラムB"
-            'Call func_c(i)
+            Call func_c(i)
             Call func_b(i)
         Case "カラムC"
-            'Call func_c(i)
+            Call func_c(i)
             Call func_a(i)
         End Select
         i = i + 1
 Wend
+MsgBox "終了しました。"
 End Sub
 
 Sub func_a(i As Integer)
@@ -48,11 +49,8 @@ Sub func_a(i As Integer)
     retu_num = Range(retu & "1").Column
     
     k = start_record
-    
-    '対象のデータに応じてここで列や文字内容の制約チェックもできれば行いたい
-    '例えば文字数チェックとか
-    
-    
+
+        
     While (k < end_record + 1)
         col_val = Worksheets(sheetname).Cells(k, retu_num)
         If col_val = vbNullString Then
@@ -91,7 +89,7 @@ Sub func_b(i As Integer)
 End Sub
 
 Sub func_c(i As Integer)
-    '特定の文字数及び、外字(また今度)をチェックする処理
+    '特定の文字数及び全角をチェックする処理
     Set Menu = Worksheets("ボタン作成用")
     sheetname = Menu.Cells(i, 1)
     start_record = Menu.Cells(i, 3)
@@ -101,46 +99,75 @@ Sub func_c(i As Integer)
     '任意の指定文字数かチェック
     limit_len = Menu.Cells(i, 6)
     
+    '20150514 Ｉ列に入力された制約でチェックする（プルダウン形式で全角、半角、ひらがな、カナ、ｶﾅを選択）
+    col_constraint = Menu.Cells(i, 9)
     k = start_record
     '対象の件数も同時にチェックする
     Dim l As Integer
     l = 0
-    count_not_zenkaku = 0
+    count_char = 0
     '文字数チェック
     While (k < end_record + 1)
         col_val = Worksheets(sheetname).Cells(k, retu_num)
-        If LenB(col_val) > limit_len Then
-            Worksheets(sheetname).Cells(k, retu_num).Font.ColorIndex = 5
-            l = l + 1
-        End If
+        Select Case col_constraint
+            Case "全角"
+                If LenB(col_val) > limit_len Then
+                    Worksheets(sheetname).Cells(k, retu_num).Font.ColorIndex = 5
+                    l = l + 1
+                End If
+            Case "半角"
+                If Len(col_val) > limit_len Then
+                    Worksheets(sheetname).Cells(k, retu_num).Font.ColorIndex = 5
+                    l = l + 1
+                End If
+        End Select
         
-    '20150513 全角のみの制約列で、全角以外が存在する場合、該当文字のみ色付け
         Dim tmpmozi As String
-    'セル内の文字数を数えて文字数分だけループ処理
+        'セル内の文字数を数えて文字数分だけループ処理
         Dim count As Integer
-         count = Len(col_val)
-         m = 1
-    'セル内の文字一つずつチェック
-        While (m < count + 1)
-            tmpmozi = Mid(col_val, m, 1)
-            len_mozi = Len(tmpmozi)
-            lenb_mozi = LenB(StrConv(tmpmozi, vbFromUnicode))
-            If len_mozi = lenb_mozi Then
-            'tmpnum = InStr(1, col_val, tmpmozi, vbTextCompare)
-            'If tmpnum = 0 Or tmpmozi = "" Or tmpmozi = Null Then
-            '半角
-                Worksheets(sheetname).Cells(k, retu_num).Characters(m, 1).Font.ColorIndex = 3
-                count_not_zenkaku = count_not_zenkaku + 1
-            End If
-    'Debug.Print (tmpmozi)
-    'MsgBox (tmpmozi)
-        m = m + 1
-        Wend
+        count = Len(col_val)
+        m = 1
+        'セル内の文字一つずつチェック
+    
+        Select Case col_constraint
+            Case "全角"
+                While (m < count + 1)
+                    tmpmozi = Mid(col_val, m, 1)
+                    len_mozi = Len(tmpmozi)
+                    lenb_mozi = LenB(StrConv(tmpmozi, vbFromUnicode))
+                
+                    If len_mozi = lenb_mozi Then
+                        Worksheets(sheetname).Cells(k, retu_num).Characters(m, 1).Font.ColorIndex = 3
+                        count_char = count_char + 1
+                    End If
+                m = m + 1
+                Wend
+            Case "半角"
+                While (m < count + 1)
+                    tmpmozi = Mid(col_val, m, 1)
+                    len_mozi = Len(tmpmozi)
+                    lenb_mozi = LenB(StrConv(tmpmozi, vbFromUnicode))
+                
+                    If len_mozi * 2 = lenb_mozi Then
+                        Worksheets(sheetname).Cells(k, retu_num).Characters(m, 1).Font.ColorIndex = 3
+                        count_char = count_char + 1
+                    End If
+                m = m + 1
+                Wend
+            Case "ひらがな"
+                '未作成
+            Case "カナ"
+                '未作成
+            Case "ｶﾅ"
+                '未作成
+            Case ""
+        End Select
+            
     '↓これ忘れると延々と処理終わらない、while書いたら忘れないよう最初に書く
-        k = k + 1
+    k = k + 1
     Wend
     Menu.Cells(i, 7) = l & "件"
-    Menu.Cells(i, 8) = count_not_zenkaku & "個"
+    Menu.Cells(i, 8) = count_char & "個"
 End Sub
 
 Sub createsheet(nsheet As String)
@@ -159,8 +186,6 @@ Sub createsheet(nsheet As String)
 
 
 End Sub
-
-
 
 Sub hankakucheck()
 '半角のみの制約列で、半角以外が存在する場合、該当文字のみ色付け
